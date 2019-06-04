@@ -85,4 +85,20 @@ class Tests {
         val prefix = mem.withSplitFilesCombined()
         require(prefix.size("a") == 7L)
     }
+
+    @Test
+    fun testSplitsCombinedOpenComplicated() {
+        val mem = listOf(
+                "a.000.split" to byteArrayOf(1),
+                "a.001.split" to byteArrayOf(2),
+                "a.002.split" to byteArrayOf(3),
+                "a.003.split" to byteArrayOf(4),
+                "a.005.split" to byteArrayOf(2),
+                "a.010.split" to byteArrayOf(3),
+                "a.020.split" to byteArrayOf(4)
+        ).map { mapOf(it).newMemoryFileSource().fakeWrap() }.combine().logged()
+
+        val prefix = mem.withSplitFilesCombined()
+        require(prefix.open("a").read().size == 7)
+    }
 }
