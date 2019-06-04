@@ -4,7 +4,7 @@ import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
 
-class PrefixedByFileSource(private val fs: FileSource, private val prefix: String) : ExtendedFileSource {
+class PrefixedByFileSource(private val fs: FileSource, private val prefix: String) : FileSource {
 
     override val isReadOnly: Boolean = fs.isReadOnly
 
@@ -29,7 +29,7 @@ class PrefixedByFileSource(private val fs: FileSource, private val prefix: Strin
 
     override fun has(name: String): Boolean = fs.has("$prefix$name")
 
-    override fun size(name: String): Long? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun size(name: String): Long = fs.size("$prefix$name")
+
+    override fun lastModified(name: String): Long = fs.lastModified("$prefix$name")
 }

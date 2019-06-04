@@ -2,16 +2,15 @@ package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.Cryptorage
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import java.io.InputStream
+import java.lang.Float.NaN
 
-class SplitFilesCombinedFileSource(private val fs: FileSource) : ExtendedFileSource {
+class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
 
     override val isReadOnly: Boolean = fs.isReadOnly
 
     override fun close() {
-        Cryptorage
         fs.close()
     }
 
@@ -52,15 +51,26 @@ class SplitFilesCombinedFileSource(private val fs: FileSource) : ExtendedFileSou
     override fun has(name: String): Boolean = fs.has(name)
 
     private class CombinedByteSource(private val fs: FileSource, name: String, private val offset: Int) :
-        ByteSource() {
+            ByteSource() {
         val regex = makeDedicatedSplitFilename(name)
         override fun openStream(): InputStream = fs
-            .list().asSequence().filter { regex.matches(it) }
-            .sorted().map { fs.open(it).openStream() }
-            .iterator().combined().skip(offset)
+                .list().asSequence().filter { regex.matches(it) }
+                .sorted().map { fs.open(it).openStream() }
+                .iterator().combined().skip(offset)
     }
 
-    override fun size(name: String): Long? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun size(name: String): Long = if (fs.has("$name.000.split")) {
+        val regex = makeDedicatedSplitFilename(name)
+        fs.list().asSequence().filter { regex.matches(it) }
+                .map { fs.size(it).toFloat() }.map { if (it < 0) NaN else it }
+                .sum().let { if (it.isNaN()) -1 else it.toLong() }
+    } else {
+        fs.size(name)
+    }
+
+    override fun lastModified(name: String): Long = if (fs.has("$name.000.split")) {
+        fs.lastModified("$name.000.split")
+    } else {
+        fs.lastModified(name)
     }
 }
