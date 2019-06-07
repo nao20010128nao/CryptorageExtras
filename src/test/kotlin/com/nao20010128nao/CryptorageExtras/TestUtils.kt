@@ -49,24 +49,6 @@ fun FileSource.fakeWrap(): Cryptorage {
     }
 }
 
-fun Cryptorage.logged(tag: String? = null): Cryptorage {
-    return object : Cryptorage by this {
-        inline fun <T> w(key: String, name: String, aa: () -> T): T {
-            val response = aa()
-            println("$tag: $key: $name: $response")
-            return response
-        }
-
-        override fun lastModified(name: String): Long = w("lastModified", name) { this@logged.lastModified(name) }
-
-        override fun open(name: String, offset: Int): ByteSource = w("open", name) { this@logged.open(name, offset) }
-
-        override fun put(name: String): ByteSink = w("put", name) { this@logged.put(name) }
-
-        override fun size(name: String): Long = w("size", name) { this@logged.size(name) }
-    }
-}
-
 fun Map<String, ByteArray>.createV1(): Cryptorage {
     val ms = emptyMap<String, ByteArray>().newMemoryFileSource()
     val v1 = ms.withV1Encryption("test")
