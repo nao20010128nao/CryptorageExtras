@@ -101,4 +101,20 @@ class Tests {
         val prefix = mem.withSplitFilesCombined()
         require(prefix.open("a").read().size == 7)
     }
+
+    @Test
+    fun testSplitsCombinedOpenComplicated2() {
+        val mem = listOf(
+                "a.000.split" to ByteArray(800),
+                "a.001.split" to ByteArray(800),
+                "a.002.split" to ByteArray(800),
+                "a.003.split" to ByteArray(800),
+                "a.005.split" to ByteArray(800),
+                "a.010.split" to ByteArray(800),
+                "a.020.split" to ByteArray(800)
+        ).map { mapOf(it).createV1() }.combine()
+
+        val prefix = mem.withSplitFilesCombined()
+        require(prefix.open("a").read().size == 7 * 800)
+    }
 }

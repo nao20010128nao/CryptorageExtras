@@ -4,6 +4,8 @@ import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.Cryptorage
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.newMemoryFileSource
+import com.nao20010128nao.Cryptorage.withV1Encryption
 
 val zeroBytes = byteArrayOf()
 
@@ -63,4 +65,15 @@ fun Cryptorage.logged(tag: String? = null): Cryptorage {
 
         override fun size(name: String): Long = w("size", name) { this@logged.size(name) }
     }
+}
+
+fun Map<String, ByteArray>.createV1(): Cryptorage {
+    val ms = emptyMap<String, ByteArray>().newMemoryFileSource()
+    val v1 = ms.withV1Encryption("test")
+    v1.meta(Cryptorage.META_SPLIT_SIZE, "200")
+    for ((k, v) in this) {
+        v1.put(k).write(v)
+    }
+    v1.commit()
+    return v1
 }
