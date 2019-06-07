@@ -48,7 +48,7 @@ class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
 
     override fun put(name: String): ByteSink = fs.put(name)
 
-    override fun has(name: String): Boolean = fs.has(name)
+    override fun has(name: String): Boolean = fs.has("$name.000.split") || fs.has(name)
 
     private class CombinedByteSource(private val fs: FileSource, name: String, private val offset: Int) :
             ByteSource() {

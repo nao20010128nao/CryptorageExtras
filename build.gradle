@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "com.github.nao20010128nao:Cryptorage:9c4ada0"
+    implementation "com.github.nao20010128nao:Cryptorage:f5bd4ef"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
