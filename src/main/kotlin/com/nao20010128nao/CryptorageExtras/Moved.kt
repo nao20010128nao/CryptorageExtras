@@ -3,6 +3,7 @@
 package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.base.Optional
+import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.google.common.io.ByteStreams
 import com.google.common.io.CharSource
@@ -10,11 +11,13 @@ import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.forCrypto
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
+import javax.crypto.CipherOutputStream
 
 
 private fun createCipher(keys: AesKeys, mode: Int): Cipher {
@@ -26,6 +29,10 @@ private fun createCipher(keys: AesKeys, mode: Int): Cipher {
 
 internal class AesDecryptorByteSource(private val source: ByteSource, private val keys: AesKeys) : ByteSource() {
     override fun openStream(): InputStream = CipherInputStream(source.openStream(), createCipher(keys, Cipher.DECRYPT_MODE))
+}
+
+internal class AesEncryptorByteSource(private val source: ByteSource, private val keys: AesKeys) : ByteSource() {
+    override fun openStream(): InputStream = CipherInputStream(source.openStream(), createCipher(keys, Cipher.ENCRYPT_MODE))
 }
 
 internal inline fun String.utf8Bytes(): ByteArray = toByteArray(StandardCharsets.UTF_8)

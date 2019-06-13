@@ -105,7 +105,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
             root["meta"] = emptyMap<String, String>()
             return ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
         }
-    }
+    }.encrypt(keys)
 
     override fun writeTo(fs: FileSource) {
         fs.put(MANIFEST_INDEX).writeFrom(serialize().openBufferedStream())
