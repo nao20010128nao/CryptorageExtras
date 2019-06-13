@@ -25,6 +25,7 @@ interface Indexer {
     fun has(name: String): Boolean = list().contains(name)
     fun lastModified(name: String): Long
     fun size(name: String): Long
+    fun joinSplits()
 
     fun serialize(): ByteSource
     fun writeTo(fs: FileSource)
@@ -71,6 +72,25 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
 
     override fun delete(name: String) {
         finalIndex.files.remove(name)
+    }
+
+    override fun joinSplits() {
+        val splits = list().filter { splitZeroFilename.matches(it) }.map { it.substring(0, it.length - 10) }.distinct()
+        splits.forEach { name ->
+            val regex = makeDedicatedSplitFilename(name)
+            // find all split files
+            val pieces = list().filter { regex.matches(it) }.sorted()
+            // enumerate all consisting file
+            val allFiles = pieces.flatMap { finalIndex.files[it]!!.files }
+            // build a new file
+            val newFile = finalIndex.files[pieces[0]]!!.copy(
+                    files = allFiles.toMutableList()
+            )
+            // remove old files
+            pieces.forEach(this@V1Indexer::delete)
+            // add new file
+            finalIndex.files[name] = newFile
+        }
     }
 
     override fun lastModified(name: String): Long = finalIndex.files[name]?.lastModified ?: -1
