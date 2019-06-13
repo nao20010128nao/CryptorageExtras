@@ -1,9 +1,10 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "UnstableApiUsage")
 
 package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.base.Optional
 import com.google.common.io.ByteSource
+import com.google.common.io.ByteStreams
 import com.google.common.io.CharSource
 import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.forCrypto
@@ -44,7 +45,7 @@ internal inline fun ByteArray.crop(off: Int, len: Int): ByteArray {
 }
 
 internal inline fun InputStream.skip(length: Int): InputStream = also {
-    skipNBytes(length.toLong())
+    ByteStreams.skipFully(it, length.toLong())
 }
 
 
