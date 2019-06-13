@@ -155,13 +155,18 @@ private fun makeBaseSource(fs: FileSource, allowFsIO: Boolean): FileSource {
     val cmb = listOf(fs, if (allowFsIO) ReferenceFileSource else InetOnlyFileSource).combined()
     return object : FileSource by cmb {
         override fun open(name: String, offset: Int): ByteSource = when (name) {
-            MANIFEST_INDEX -> open(MANIFEST, offset)
+            MANIFEST -> open(MANIFEST_INDEX, offset)
             else -> cmb.open(name, offset)
         }
 
         override fun open(name: String): ByteSource = when (name) {
-            MANIFEST_INDEX -> open(MANIFEST, 0)
+            MANIFEST -> open(MANIFEST_INDEX, 0)
             else -> cmb.open(name, 0)
+        }
+
+        override fun has(name: String): Boolean = when (name) {
+            MANIFEST -> true
+            else -> cmb.has(name)
         }
     }
 }
