@@ -8,7 +8,8 @@ import java.lang.Float.NaN
 
 class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
 
-    override val isReadOnly: Boolean = fs.isReadOnly
+    override val isReadOnly: Boolean
+        get() = fs.isReadOnly
 
     override fun close() {
         fs.close()

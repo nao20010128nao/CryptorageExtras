@@ -5,14 +5,23 @@ package com.nao20010128nao.CryptorageExtras
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.google.common.io.ByteStreams
+import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.Cryptorage
+import com.nao20010128nao.Cryptorage.forCrypto
 import com.nao20010128nao.Cryptorage.internal.ConcatenatedInputStream
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import java.io.File
 import java.io.InputStream
+import java.net.URL
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
 
 fun FileSource.withNamePrefixed(name: String): FileSource = PrefixedByFileSource(this, name)
-
 fun FileSource.withSplitFilesCombined(): FileSource = SplitFilesCombinedFileSource(this)
+fun FileSource.withRetries(retry: Int = 5): FileSource = RetriesFileSource(this, retry)
+fun List<FileSource>.combined(): FileSource = CombinedFileSource(this)
 
 
 internal val splitFilename: Regex = Regex("(.+)\\.[0-9]{3}\\.split$")
@@ -22,8 +31,32 @@ internal inline fun makeDedicatedSplitFilename(name: String): Regex = Regex(Rege
 
 internal inline fun Iterator<InputStream>.combined(): InputStream = ConcatenatedInputStream(this)
 
-internal inline fun InputStream.skip(length: Int): InputStream = also {
-    ByteStreams.skipFully(this, length.toLong())
+inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
+    var lastError: Throwable? = null
+    for (i in (1..retry)) {
+        return try {
+            f()
+        } catch (e: Throwable) {
+            lastError = e
+            null
+        } ?: continue
+    }
+    lastError?.printStackTrace()
+    return null
+}
+
+fun testURL(url: String): Boolean = try {
+    URL(url)
+    true
+} catch (e: Throwable) {
+    false
+}
+
+fun testPath(url: String): Boolean = try {
+    File(url)
+    true
+} catch (e: Throwable) {
+    false
 }
 
 fun Cryptorage.logged(tag: String? = null): Cryptorage = object : Cryptorage by this {
