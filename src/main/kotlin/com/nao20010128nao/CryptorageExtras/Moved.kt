@@ -2,6 +2,8 @@
 
 package com.nao20010128nao.CryptorageExtras
 
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Klaxon
 import com.google.common.base.Optional
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
@@ -12,6 +14,7 @@ import com.nao20010128nao.Cryptorage.forCrypto
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import java.io.Reader
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -76,3 +79,8 @@ internal class FileByteSource(private val file: File, private val offset: Int) :
 internal class UrlByteSource(private val url: URL, private val offset: Int) : ByteSource() {
     override fun openStream(): InputStream = url.openStream().skip(offset)
 }
+
+
+internal val klaxon = Klaxon()
+internal inline fun parseJson(text: String): JsonObject = klaxon.parseJsonObject(text.reader())
+internal inline fun parseJson(rdr: Reader): JsonObject = klaxon.parseJsonObject(rdr)

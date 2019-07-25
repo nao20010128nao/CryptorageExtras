@@ -123,7 +123,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
     }
 
     private fun readIndex(source: FileSource): Index = if (source.has(MANIFEST)) {
-        val data = (Parser().parse(AesDecryptorByteSource(source.open(MANIFEST), keys).asCharSource().openStream()) as JsonObject)
+        val data = parseJson(AesDecryptorByteSource(source.open(MANIFEST), keys).asCharSource().openStream())
         val files = data.obj("files")!!.mapValues { CryptorageFile(it.value as JsonObject) }
         Index(files.toMutableMap())
     } else {
