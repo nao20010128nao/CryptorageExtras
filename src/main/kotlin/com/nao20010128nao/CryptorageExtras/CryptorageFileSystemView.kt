@@ -16,9 +16,9 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
 
     override fun getFile(file: String): FtpFile = when (file) {
         "/", "./" -> root
-        else -> ActualFtpFile(fs, when (file) {
-            "/" -> file.substring(1)
-            "./" -> file.substring(2)
+        else -> ActualFtpFile(fs, when {
+            file.startsWith("/") -> file.substring(1)
+            file.startsWith("./") -> file.substring(2)
             else -> file
         })
     }
@@ -91,9 +91,7 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
         override fun isRemovable(): Boolean = false
     }
 
-    private class ActualFtpFile(private val fs: Cryptorage, fn: String) : AbsFtpFile() {
-        private val filename = if (fn.startsWith("/")) fn.substring(1) else fn
-
+    private class ActualFtpFile(private val fs: Cryptorage, private val filename: String) : AbsFtpFile() {
         init {
             require(filename != "")
         }
