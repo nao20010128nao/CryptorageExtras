@@ -19,6 +19,8 @@ interface Indexer {
     fun addIndex(url: URL)
     fun addIndexDirectory(file: File)
     fun addIndexZip(file: File)
+    fun addIndexed(url: URL)
+    fun addIndexed(file: File)
     fun list(): List<String>
     fun mv(from: String, to: String)
     fun delete(name: String)
@@ -62,6 +64,19 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
             finalIndex.files[name] = ff.copy(files = ff.files.map { "zip:$file!$name" }.toMutableList())
         }
     }
+
+    override fun addIndexed(url: URL) {
+        val fs = url.asFileSource()
+        val index = readIndex(fs, MANIFEST_INDEX)
+        finalIndex.files.putAll(index.files)
+    }
+
+    override fun addIndexed(file: File) {
+        val fs = file.asFileSource()
+        val index = readIndex(fs, MANIFEST_INDEX)
+        finalIndex.files.putAll(index.files)
+    }
+
 
     override fun list(): List<String> = finalIndex.files.keys.toList()
 
@@ -122,8 +137,8 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
         }
     }
 
-    private fun readIndex(source: FileSource): Index = if (source.has(MANIFEST)) {
-        val data = parseJson(AesDecryptorByteSource(source.open(MANIFEST), keys).asCharSource().openStream())
+    private fun readIndex(source: FileSource, manifestName: String = MANIFEST): Index = if (source.has(manifestName)) {
+        val data = parseJson(AesDecryptorByteSource(source.open(manifestName), keys).asCharSource().openStream())
         val files = data.obj("files")!!.mapValues { CryptorageFile(it.value as JsonObject) }
         Index(files.toMutableMap())
     } else {
