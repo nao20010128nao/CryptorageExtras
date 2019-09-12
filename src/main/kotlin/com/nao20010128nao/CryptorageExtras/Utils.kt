@@ -10,6 +10,7 @@ import com.nao20010128nao.Cryptorage.Cryptorage
 import com.nao20010128nao.Cryptorage.forCrypto
 import com.nao20010128nao.Cryptorage.internal.ConcatenatedInputStream
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import org.apache.ftpserver.ftplet.FileSystemView
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -88,3 +89,5 @@ fun FileSource.logged(tag: String? = null): FileSource = object : FileSource by 
     override fun put(name: String): ByteSink = w("put", name) { this@logged.put(name) }
     override fun size(name: String): Long = w("size", name) { this@logged.size(name) }
 }
+
+fun Cryptorage.forFtpServer(): FileSystemView = CryptorageFileSystemView(this)
