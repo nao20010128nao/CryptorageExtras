@@ -28,7 +28,7 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
         }
     }
 
-    override fun changeWorkingDirectory(dir: String?): Boolean = false
+    override fun changeWorkingDirectory(dir: String): Boolean = dir == "/"
 
     private abstract class AbsFtpFile : FtpFile {
 
