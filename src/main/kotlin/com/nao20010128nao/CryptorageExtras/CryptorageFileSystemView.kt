@@ -75,7 +75,7 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
 
         override fun createInputStream(offset: Long): InputStream = error("Opening stream for root")
 
-        override fun getAbsolutePath(): String = "./"
+        override fun getAbsolutePath(): String = "/"
 
         override fun createOutputStream(offset: Long): OutputStream = error("Opening stream for root")
 
@@ -115,7 +115,7 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
 
         override fun createInputStream(offset: Long): InputStream = fs.open(filename, offset.toInt()).openStream()
 
-        override fun getAbsolutePath(): String = "./$filename"
+        override fun getAbsolutePath(): String = "/$filename"
 
         override fun createOutputStream(offset: Long): OutputStream = if (offset == 0L) {
             fs.put(filename).openStream()
