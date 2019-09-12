@@ -91,6 +91,10 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
     private class ActualFtpFile(private val fs: Cryptorage, fn: String) : AbsFtpFile() {
         private val filename = if (fn.startsWith("/")) fn.substring(1) else fn
 
+        init {
+            require(filename != "")
+        }
+
         override fun getName(): String = filename
 
         override fun getSize(): Long = fs.size(filename)
