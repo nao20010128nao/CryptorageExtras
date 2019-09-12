@@ -14,10 +14,13 @@ class CryptorageFileSystemView(private val fs: Cryptorage, private val allowClos
 
     override fun isRandomAccessible(): Boolean = true
 
-    override fun getFile(file: String): FtpFile = if (file == "/") {
-        root
-    } else {
-        ActualFtpFile(fs, file.substring(1))
+    override fun getFile(file: String): FtpFile = when (file) {
+        "/", "./" -> root
+        else -> ActualFtpFile(fs, when (file) {
+            "/" -> file.substring(1)
+            "./" -> file.substring(2)
+            else -> file
+        })
     }
 
     override fun getHomeDirectory(): FtpFile = root
