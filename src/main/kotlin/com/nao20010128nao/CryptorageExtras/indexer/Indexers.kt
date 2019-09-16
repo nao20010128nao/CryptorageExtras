@@ -9,6 +9,7 @@ import com.nao20010128nao.Cryptorage.asFileSource
 import com.nao20010128nao.Cryptorage.asZipFileSource
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import com.nao20010128nao.CryptorageExtras.*
+import com.nao20010128nao.CryptorageExtras.bfilter.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -30,6 +31,7 @@ interface Indexer {
     fun joinSplits()
 
     fun serialize(): ByteSource
+    fun bloomFilter(): ByteArray
     fun writeTo(fs: FileSource)
 }
 
@@ -122,13 +124,25 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
         }
     }.encrypt(keys)
 
+    override fun bloomFilter(): ByteArray {
+        val bf: BloomFilter = BloomFilter(finalIndex.files.size.toLong())
+        finalIndex.files.keys.forEach {
+            bf.add(it.utf8Bytes())
+        }
+        val baos: ByteArrayOutputStream = ByteArrayOutputStream(bf.sizeInBytes().toInt())
+        BloomFilter.serialize(baos, bf)
+        return baos.toByteArray()
+    }
+
     override fun writeTo(fs: FileSource) {
         fs.put(MANIFEST_INDEX).writeFrom(serialize().openBufferedStream())
+        fs.put(BLOOM_FILTER).write(bloomFilter())
     }
 
     companion object {
         const val MANIFEST: String = "manifest"
         const val MANIFEST_INDEX: String = "manifest_index"
+        const val BLOOM_FILTER: String = "bloom_filter"
 
         private fun populateKeys(password: String): AesKeys {
             val utf8Bytes1 = password.utf8Bytes()
