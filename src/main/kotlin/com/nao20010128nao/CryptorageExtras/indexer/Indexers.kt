@@ -24,6 +24,7 @@ interface Indexer {
     fun addIndexed(file: File)
     fun list(): List<String>
     fun mv(from: String, to: String)
+    fun copy(from: String, to: String)
     fun delete(name: String)
     fun has(name: String): Boolean = list().contains(name)
     fun lastModified(name: String): Long
@@ -87,6 +88,10 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
         finalIndex.files.remove(from)
     }
 
+    override fun copy(from: String, to: String) {
+        finalIndex.files[to] = finalIndex.files[from]!!
+    }
+
     override fun delete(name: String) {
         finalIndex.files.remove(name)
     }
@@ -118,25 +123,26 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
         override fun openStream(): InputStream {
             val root = JsonObject()
             root["files"] = finalIndex.files.mapValues { it.value.toJsonMap() }
-            // empty, but required to load without error
-            root["meta"] = emptyMap<String, String>()
+            // BLOOM_FILTER is unused as of e2aea0
+            root["meta"] = mapOf(
+                    BLOOM_FILTER to bloomFilter().encodeBase64ToString()
+            )
             return ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
         }
     }.encrypt(keys)
 
     override fun bloomFilter(): ByteArray {
-        val bf: BloomFilter = BloomFilter(finalIndex.files.size.toLong())
+        val bf = BloomFilter(finalIndex.files.size.toLong())
         finalIndex.files.keys.forEach {
             bf.add(it.utf8Bytes())
         }
-        val baos: ByteArrayOutputStream = ByteArrayOutputStream(bf.sizeInBytes().toInt())
+        val baos = ByteArrayOutputStream(bf.sizeInBytes().toInt())
         BloomFilter.serialize(baos, bf)
         return baos.toByteArray()
     }
 
     override fun writeTo(fs: FileSource) {
         fs.put(MANIFEST_INDEX).writeFrom(serialize().openBufferedStream())
-        fs.put(BLOOM_FILTER).write(bloomFilter())
     }
 
     companion object {
