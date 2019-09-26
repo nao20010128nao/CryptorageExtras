@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.net.URL
+import kotlin.math.max
 
 interface Indexer {
     fun addIndex(url: URL)
@@ -132,7 +133,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
     }.encrypt(keys)
 
     override fun bloomFilter(): ByteArray {
-        val bf = BloomFilter(finalIndex.files.size.toLong())
+        val bf = BloomFilter(max(finalIndex.files.size.toLong(), 3))
         finalIndex.files.keys.forEach {
             bf.add(it.utf8Bytes())
         }
