@@ -17,7 +17,7 @@ import java.io.InputStream
 import java.net.URL
 import kotlin.math.max
 
-interface Indexer {
+interface Indexer<T : Indexer<T>> {
     fun addIndex(url: URL)
     fun addIndexDirectory(file: File)
     fun addIndexZip(file: File)
@@ -31,13 +31,14 @@ interface Indexer {
     fun lastModified(name: String): Long
     fun size(name: String): Long
     fun joinSplits()
+    fun merge(indexer: T)
 
     fun serialize(): ByteSource
     fun bloomFilter(): ByteArray
     fun writeTo(fs: FileSource)
 }
 
-class V1Indexer(private val keys: AesKeys) : Indexer {
+class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
 
     constructor(password: String) : this(populateKeys(password))
 
@@ -119,6 +120,10 @@ class V1Indexer(private val keys: AesKeys) : Indexer {
     override fun lastModified(name: String): Long = finalIndex.files[name]?.lastModified ?: -1
 
     override fun size(name: String): Long = finalIndex.files[name]?.size ?: -1
+
+    override fun merge(indexer: V1Indexer) {
+        finalIndex.files.putAll(indexer.finalIndex.files)
+    }
 
     override fun serialize(): ByteSource = object : ByteSource() {
         override fun openStream(): InputStream {
