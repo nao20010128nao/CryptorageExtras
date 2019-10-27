@@ -99,11 +99,11 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
     }
 
     override fun joinSplits() {
-        val splits = list().filter { splitZeroFilename.matches(it) }.map { it.substring(0, it.length - 10) }.distinct()
+        val splits = list().asSequence().map { splitZeroFilename.matchEntire(it) }.nonNulls().map { it.groupValues[1] }.distinct()
         splits.forEach { name ->
             val regex = makeDedicatedSplitFilename(name)
             // find all split files
-            val pieces = list().filter { regex.matches(it) }.sorted()
+            val pieces = list().filter { regex.matches(it) }.sortedBy { regex.matchEntire(it)!!.groupValues[1].toInt() }
             // enumerate all consisting file
             val allFiles = pieces.flatMap { finalIndex.files[it]!!.files }
             // build a new file
