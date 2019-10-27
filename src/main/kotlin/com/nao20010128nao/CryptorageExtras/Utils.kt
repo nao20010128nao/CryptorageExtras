@@ -25,10 +25,10 @@ fun FileSource.withRetries(retry: Int = 5): FileSource = RetriesFileSource(this,
 fun List<FileSource>.combined(): FileSource = CombinedFileSource(this)
 
 
-internal val splitFilename: Regex = Regex("(.+)\\.[0-9]{3}\\.split$")
-internal val splitZeroFilename: Regex = Regex("(.+)\\.000\\.split$")
+internal val splitFilename: Regex = Regex("(.+)\\.[0-9]+\\.split$")
+internal val splitZeroFilename: Regex = Regex("(.+)\\.0+\\.split$")
 
-internal inline fun makeDedicatedSplitFilename(name: String): Regex = Regex(Regex.escape(name) + "\\.[0-9]{3}\\.split$")
+internal inline fun makeDedicatedSplitFilename(name: String): Regex = Regex(Regex.escape(name) + "\\.[0-9]+\\.split$")
 
 internal inline fun Iterator<InputStream>.combined(): InputStream = ConcatenatedInputStream(this)
 
