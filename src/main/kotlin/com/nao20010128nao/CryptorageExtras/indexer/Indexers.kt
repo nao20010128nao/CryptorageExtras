@@ -106,9 +106,12 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
             val pieces = list().filter { regex.matches(it) }.sortedBy { regex.matchEntire(it)!!.groupValues[1].toInt() }
             // enumerate all consisting file
             val allFiles = pieces.flatMap { finalIndex.files[it]!!.files }
+            // calculate total size of all files
+            val size = allFiles.map { size(it) }.sum()
             // build a new file
             val newFile = finalIndex.files[pieces[0]]!!.copy(
-                    files = allFiles.toMutableList()
+                    files = allFiles.toMutableList(),
+                    size = size
             )
             // remove old files
             pieces.forEach(this@V1Indexer::delete)
