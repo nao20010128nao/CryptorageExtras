@@ -107,7 +107,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
             // enumerate all consisting file
             val allFiles = pieces.flatMap { finalIndex.files[it]!!.files }
             // calculate total size of all files
-            val size = allFiles.map { size(it) }.toLongArray().sum()
+            val size = pieces.map { size(it) }.toLongArray().sum()
             // build a new file
             val newFile = finalIndex.files[pieces[0]]!!.copy(
                     files = allFiles.toMutableList(),
