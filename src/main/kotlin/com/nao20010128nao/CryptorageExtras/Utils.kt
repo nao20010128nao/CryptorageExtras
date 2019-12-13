@@ -46,6 +46,12 @@ inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
     return null
 }
 
+inline fun <T> wish(f: ()->T?):T? = try{
+    f()
+}catch(e:Throwable){
+    null
+}
+
 fun ByteSource.encrypt(keys: AesKeys): ByteSource = AesEncryptorByteSource(this, keys)
 
 fun testURL(url: String): Boolean = try {
