@@ -4,20 +4,14 @@ package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.google.common.io.ByteStreams
 import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.Cryptorage
-import com.nao20010128nao.Cryptorage.forCrypto
 import com.nao20010128nao.Cryptorage.internal.ConcatenatedInputStream
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import org.apache.ftpserver.ftplet.FileSystemView
 import java.io.File
 import java.io.InputStream
 import java.net.URL
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import javax.crypto.Cipher
-import javax.crypto.CipherInputStream
 
 fun FileSource.withNamePrefixed(name: String): FileSource = PrefixedByFileSource(this, name)
 fun FileSource.withSplitFilesCombined(): FileSource = SplitFilesCombinedFileSource(this)
