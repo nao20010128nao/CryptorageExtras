@@ -3,14 +3,19 @@ package com.nao20010128nao.CryptorageExtras
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import java.io.InputStream
 
 class CombinedFileSource(val cryptorages: List<FileSource>) : FileSource {
     constructor(vararg cs: FileSource) : this(cs.asList())
 
     override val isReadOnly: Boolean = true
     override fun list(): Array<String> = cryptorages.flatMap { it.list().asList() }.distinct().toTypedArray()
-    override fun open(name: String, offset: Int): ByteSource = cryptorages.firstNonNull { wish { it.open(name, offset) } }!!
-    override fun open(name: String): ByteSource = cryptorages.firstNonNull { wish { it.open(name) } }!!
+    override fun open(name: String, offset: Int): ByteSource = object : ByteSource(){
+        override fun openStream():InputStream=cryptorages.firstNonNull { wish { it.open(name, offset).openStream() } }!!
+    }
+    override fun open(name: String): ByteSource = object : ByteSource(){
+        override fun openStream():InputStream=cryptorages.firstNonNull { wish { it.open(name).openStream() } }!!
+    }
     override fun has(name: String): Boolean = cryptorages.fold(false) { acc, obj -> acc or obj.has(name) }
     override fun lastModified(name: String): Long = cryptorages.firstNonNull {
         it.size(name).let { aa -> if (aa < 0) null else aa }
