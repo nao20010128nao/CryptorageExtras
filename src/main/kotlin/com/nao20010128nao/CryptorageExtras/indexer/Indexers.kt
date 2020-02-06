@@ -47,7 +47,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
     override fun addIndex(url: URL) {
         val fs = url.asFileSource()
         val index = readIndex(fs)
-        index.files.forEach { name, file ->
+        index.files.forEach { (name, file) ->
             finalIndex.files[name] = file.copy(files = file.files.map {
                 URL(url.protocol, url.host, url.port, "${url.path}/$it${if (url.query.isNullOrBlank()) "" else "?${url.query}"}").toString()
             }.toMutableList())
@@ -57,7 +57,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
     override fun addIndexDirectory(file: File) {
         val fs = file.asFileSource()
         val index = readIndex(fs)
-        index.files.forEach { name, ff ->
+        index.files.forEach { (name, ff) ->
             finalIndex.files[name] = ff.copy(files = ff.files.map { File(file, name).toString() }.toMutableList())
         }
     }
@@ -65,7 +65,7 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
     override fun addIndexZip(file: File) {
         val fs = file.asZipFileSource()
         val index = readIndex(fs)
-        index.files.forEach { name, ff ->
+        index.files.forEach { (name, ff) ->
             finalIndex.files[name] = ff.copy(files = ff.files.map { "zip:$file!$name" }.toMutableList())
         }
     }

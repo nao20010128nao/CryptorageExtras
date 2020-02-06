@@ -11,12 +11,13 @@ import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import org.apache.ftpserver.ftplet.FileSystemView
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.URL
 
-fun FileSource.withNamePrefixed(name: String): FileSource = PrefixedByFileSource(this, name)
-fun FileSource.withSplitFilesCombined(): FileSource = SplitFilesCombinedFileSource(this)
-fun FileSource.withRetries(retry: Int = 5): FileSource = RetriesFileSource(this, retry)
-fun List<FileSource>.combined(): FileSource = CombinedFileSource(this)
+fun FileSource.withNamePrefixed(name: String): PrefixedByFileSource = PrefixedByFileSource(this, name)
+fun FileSource.withSplitFilesCombined(): SplitFilesCombinedFileSource = SplitFilesCombinedFileSource(this)
+fun FileSource.withRetries(retry: Int = 5): RetriesFileSource = RetriesFileSource(this, retry)
+fun List<FileSource>.combined(): CombinedFileSource = CombinedFileSource(this)
 
 
 internal val splitFilename: Regex = Regex("(.+)\\.[0-9]+\\.split$")
@@ -40,9 +41,9 @@ inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
     return null
 }
 
-inline fun <T> wish(f: ()->T?):T? = try{
+inline fun <T> wish(f: () -> T?): T? = try {
     f()
-}catch(e:Throwable){
+} catch (e: Throwable) {
     null
 }
 
@@ -93,3 +94,11 @@ fun FileSource.logged(tag: String? = null): FileSource = object : FileSource by 
 fun Cryptorage.forFtpServer(): FileSystemView = CryptorageFileSystemView(this)
 
 fun <T> Sequence<T?>.nonNulls(): Sequence<T> = filter { it != null }.map { it!! }
+
+fun source(f: () -> InputStream): ByteSource = object : ByteSource() {
+    override fun openStream(): InputStream = f()
+}
+
+fun sink(f: () -> OutputStream): ByteSink = object : ByteSink() {
+    override fun openStream(): OutputStream = f()
+}
