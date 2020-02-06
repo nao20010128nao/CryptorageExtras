@@ -24,12 +24,13 @@ class FileSourceEditor {
 
     fun build(): FileSource {
         val upper = upper
+        val aliases = aliases
         val base = if (upper == null) {
             sources
         } else {
             listOf(upper) + sources
         }.combined()
-        return object : FileSource by base {
+        val unaliased = object : FileSource by base {
             private val deleted: MutableList<String> = mutableListOf()
 
             override val isReadOnly: Boolean
@@ -70,6 +71,22 @@ class FileSourceEditor {
                     } catch (e: Throwable) {
                     }
                 }
+            }
+        }
+        return if (aliases.isEmpty()) {
+            unaliased
+        } else {
+            object : FileSource {
+                override val isReadOnly: Boolean = unaliased.isReadOnly
+                override fun close() = unaliased.close()
+                override fun commit() = unaliased.commit()
+                override fun delete(name: String) = unaliased.delete(aliases[name] ?: name)
+                override fun lastModified(name: String): Long = unaliased.lastModified(aliases[name] ?: name)
+                override fun open(name: String, offset: Int): ByteSource = unaliased.open(aliases[name] ?: name, offset)
+                override fun put(name: String): ByteSink = unaliased.put(aliases[name] ?: name)
+                override fun size(name: String): Long = unaliased.size(aliases[name] ?: name)
+                override fun list(): Array<String> =
+                        unaliased.list().asSequence().map { aliases[it] ?: it }.toSet().toTypedArray()
             }
         }
     }
