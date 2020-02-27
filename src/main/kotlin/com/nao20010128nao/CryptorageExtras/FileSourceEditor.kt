@@ -83,8 +83,10 @@ class FileSourceEditor {
                 override fun delete(name: String) = unaliased.delete(aliases[name] ?: name)
                 override fun lastModified(name: String): Long = unaliased.lastModified(aliases[name] ?: name)
                 override fun open(name: String, offset: Int): ByteSource = unaliased.open(aliases[name] ?: name, offset)
+                override fun open(name: String): ByteSource = unaliased.open(aliases[name] ?: name)
                 override fun put(name: String): ByteSink = unaliased.put(aliases[name] ?: name)
                 override fun size(name: String): Long = unaliased.size(aliases[name] ?: name)
+                override fun has(name: String): Boolean = unaliased.has(aliases[name] ?: name)
                 override fun list(): Array<String> =
                         unaliased.list().asSequence().map { aliases[it] ?: it }.toSet().toTypedArray()
             }
