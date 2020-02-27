@@ -24,6 +24,7 @@ class RetriesFileSource(private val fs: FileSource, private val retry: Int) : Fi
     override fun list(): Array<String> = fs.list()
     override fun open(name: String, offset: Int): ByteSource = probable(retry) { fs.open(name, offset) }!!
     override fun size(name: String): Long = fs.size(name)
+    override fun has(name: String): Boolean = fs.has(name)
 
     override fun put(name: String): ByteSink = if (isReadOnly) {
         error("This FileSource is read-only.")
