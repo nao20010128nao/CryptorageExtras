@@ -22,7 +22,7 @@ class RetriesFileSource(private val fs: FileSource, private val retry: Int) : Fi
 
     override fun lastModified(name: String): Long = fs.lastModified(name)
     override fun list(): Array<String> = fs.list()
-    override fun open(name: String, offset: Int): ByteSource = probable(retry) { fs.open(name, offset) }!!
+    override fun open(name: String, offset: Int): ByteSource = source { probable(retry) { fs.open(name, offset).openStream() } }
     override fun size(name: String): Long = fs.size(name)
     override fun has(name: String): Boolean = fs.has(name)
 
