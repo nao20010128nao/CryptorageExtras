@@ -5,9 +5,9 @@ package com.nao20010128nao.CryptorageExtras.indexer
 import com.beust.klaxon.JsonObject
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.AesKeys
+import com.nao20010128nao.Cryptorage.FileSource
 import com.nao20010128nao.Cryptorage.asFileSource
 import com.nao20010128nao.Cryptorage.asZipFileSource
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import com.nao20010128nao.CryptorageExtras.*
 import com.nao20010128nao.CryptorageExtras.bfilter.BloomFilter
 import java.io.ByteArrayInputStream

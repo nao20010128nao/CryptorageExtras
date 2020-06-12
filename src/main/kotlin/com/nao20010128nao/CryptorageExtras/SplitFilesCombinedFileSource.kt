@@ -1,24 +1,11 @@
 package com.nao20010128nao.CryptorageExtras
 
-import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.FileSource
 import java.io.InputStream
 import java.lang.Float.NaN
 
-class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
-
-    override val isReadOnly: Boolean
-        get() = fs.isReadOnly
-
-    override fun close() {
-        fs.close()
-    }
-
-    override fun commit() {
-        fs.commit()
-    }
-
+class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource by fs {
     override fun delete(name: String) {
         if (fs.has("$name.000.split")) {
             val regex = makeDedicatedSplitFilename(name)
@@ -31,14 +18,14 @@ class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
     }
 
     // note: this filters very roughly
-    override fun list(): Array<String> {
+    override fun list(): List<String> {
         val lst = fs.list()
         // find all split file and remove its tail
         val wasSplit = lst.asSequence().filter { splitZeroFilename.matches(it) }.map { it.substring(0, it.length - 10) }
         // find all non-split file
         val wasntSplit = lst.asSequence().filter { !splitFilename.matches(it) }
         // combine without duplication
-        return (wasSplit + wasntSplit).distinct().toList().toTypedArray()
+        return (wasSplit + wasntSplit).distinct().toList()
     }
 
     override fun open(name: String, offset: Int): ByteSource = if (fs.has("$name.000.split")) {
@@ -46,8 +33,6 @@ class SplitFilesCombinedFileSource(private val fs: FileSource) : FileSource {
     } else {
         fs.open(name, offset)
     }
-
-    override fun put(name: String): ByteSink = fs.put(name)
 
     override fun has(name: String): Boolean = fs.has("$name.000.split") || fs.has(name)
 

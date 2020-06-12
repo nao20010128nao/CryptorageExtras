@@ -6,8 +6,8 @@ import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.Cryptorage
+import com.nao20010128nao.Cryptorage.FileSource
 import com.nao20010128nao.Cryptorage.internal.ConcatenatedInputStream
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
 import org.apache.ftpserver.ftplet.FileSystemView
 import java.io.File
 import java.io.InputStream

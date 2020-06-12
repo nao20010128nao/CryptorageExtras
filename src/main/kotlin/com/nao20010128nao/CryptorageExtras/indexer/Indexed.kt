@@ -6,7 +6,7 @@ import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.Cryptorage
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.FileSource
 import com.nao20010128nao.Cryptorage.withV1Encryption
 import com.nao20010128nao.CryptorageExtras.*
 import com.nao20010128nao.CryptorageExtras.indexer.V1Indexer.Companion.MANIFEST
@@ -49,9 +49,7 @@ object ReferenceFileSource : FileSource {
         else -> error("Not found")
     } ?: -1L
 
-    override fun list(): Array<String> {
-        error("Infinity")
-    }
+    override fun list(): List<String> = error("Infinite")
 
     override fun open(name: String, offset: Int): ByteSource = when {
         // zip file
@@ -79,9 +77,7 @@ object ReferenceFileSource : FileSource {
         else -> error("Not found")
     }
 
-    override fun put(name: String): ByteSink {
-        error("Read-only")
-    }
+    override fun put(name: String): ByteSink = error("Read-only")
 
     override fun size(name: String): Long = when {
         // zip file
@@ -140,13 +136,9 @@ object InetOnlyFileSource : FileSource {
     }
 
 
-    override fun list(): Array<String> {
-        error("Infinity")
-    }
+    override fun list(): List<String> = error("Infinite")
 
-    override fun put(name: String): ByteSink {
-        error("Read-only")
-    }
+    override fun put(name: String): ByteSink = error("Read-only")
 
     private fun noIO(): Nothing = error("Filesystem IO is disabled")
 }

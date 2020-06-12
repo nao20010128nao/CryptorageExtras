@@ -2,7 +2,7 @@ package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.FileSource
 
 class PrefixedByFileSource(private val fs: FileSource, private val prefix: String) : FileSource {
 
@@ -21,8 +21,11 @@ class PrefixedByFileSource(private val fs: FileSource, private val prefix: Strin
         fs.delete("$prefix$name")
     }
 
-    override fun list(): Array<String> =
-            fs.list().filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }.toTypedArray()
+    override fun list(): List<String> =
+            fs.list().asSequence()
+                    .filter { it.startsWith(prefix) }
+                    .map { it.removePrefix(prefix) }
+                    .toList()
 
     override fun open(name: String, offset: Int): ByteSource = fs.open("$prefix$name", offset)
     override fun put(name: String): ByteSink = fs.put("$prefix$name")

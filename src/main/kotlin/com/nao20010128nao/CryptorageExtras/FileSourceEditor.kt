@@ -2,7 +2,7 @@ package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.FileSource
 import java.io.FilterOutputStream
 
 class FileSourceEditor {
@@ -87,8 +87,8 @@ class FileSourceEditor {
                 override fun put(name: String): ByteSink = unaliased.put(aliases[name] ?: name)
                 override fun size(name: String): Long = unaliased.size(aliases[name] ?: name)
                 override fun has(name: String): Boolean = unaliased.has(aliases[name] ?: name)
-                override fun list(): Array<String> =
-                        unaliased.list().asSequence().map { aliases[it] ?: it }.toSet().toTypedArray()
+                override fun list(): List<String> =
+                        unaliased.list().asSequence().map { aliases[it] ?: it }.distinct().toList()
             }
         }
     }

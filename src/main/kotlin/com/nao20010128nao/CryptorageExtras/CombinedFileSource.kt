@@ -2,13 +2,17 @@ package com.nao20010128nao.CryptorageExtras
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.internal.file.FileSource
+import com.nao20010128nao.Cryptorage.FileSource
 
 class CombinedFileSource(val cryptorages: List<FileSource>) : FileSource {
     constructor(vararg cs: FileSource) : this(cs.asList())
 
     override val isReadOnly: Boolean = true
-    override fun list(): Array<String> = cryptorages.flatMap { it.list().asList() }.distinct().toTypedArray()
+    override fun list(): List<String> = cryptorages.asSequence()
+            .flatMap { it.list().asSequence() }
+            .distinct()
+            .toList()
+
     override fun open(name: String, offset: Int): ByteSource = source {
         cryptorages.firstNonNull { wish { it.open(name, offset).openStream() } }!!
     }
