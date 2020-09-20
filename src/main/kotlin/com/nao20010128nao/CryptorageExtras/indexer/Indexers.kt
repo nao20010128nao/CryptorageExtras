@@ -3,6 +3,7 @@
 package com.nao20010128nao.CryptorageExtras.indexer
 
 import com.beust.klaxon.JsonObject
+import com.google.common.collect.HashMultimap
 import com.google.common.io.ByteSource
 import com.nao20010128nao.Cryptorage.AesKeys
 import com.nao20010128nao.Cryptorage.FileSource
@@ -99,15 +100,18 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
     }
 
     override fun joinSplits() {
-        val splits = list().asSequence().map { splitZeroFilename.matchEntire(it) }.nonNulls().map { it.groupValues[1] }.distinct()
-        splits.forEach { name ->
-            val regex = makeDedicatedSplitFilename(name)
-            // find all split files
-            val pieces = list().filter { regex.matches(it) }.sortedBy { regex.matchEntire(it)!!.groupValues[1].toInt() }
+        val foundSplits = HashMultimap.create<String, String>()
+        for (it in list()) {
+            val match = splitFilename.matchEntire(it) ?: continue
+            val (split, baseName) = match.groupValues
+            foundSplits.put(baseName, split)
+        }
+        foundSplits.asMap().forEach { (name, unsortedPieces) ->
+            val pieces = unsortedPieces.sorted()
             // enumerate all consisting file
-            val allFiles = pieces.flatMap { finalIndex.files[it]!!.files }
+            val allFiles = pieces.asSequence().flatMap { finalIndex.files[it]!!.files }
             // calculate total size of all files
-            val size = pieces.map { size(it) }.toLongArray().sum()
+            val size = pieces.asSequence().map { size(it) }.fold(0L, Long::plus)
             // build a new file
             val newFile = finalIndex.files[pieces[0]]!!.copy(
                     files = allFiles.toMutableList(),
