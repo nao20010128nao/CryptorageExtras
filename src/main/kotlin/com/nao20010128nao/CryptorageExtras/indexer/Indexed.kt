@@ -4,10 +4,7 @@ package com.nao20010128nao.CryptorageExtras.indexer
 
 import com.google.common.io.ByteSink
 import com.google.common.io.ByteSource
-import com.nao20010128nao.Cryptorage.AesKeys
-import com.nao20010128nao.Cryptorage.Cryptorage
-import com.nao20010128nao.Cryptorage.FileSource
-import com.nao20010128nao.Cryptorage.withV1Encryption
+import com.nao20010128nao.Cryptorage.*
 import com.nao20010128nao.CryptorageExtras.*
 import com.nao20010128nao.CryptorageExtras.indexer.V1Indexer.Companion.MANIFEST
 import com.nao20010128nao.CryptorageExtras.indexer.V1Indexer.Companion.MANIFEST_INDEX
@@ -169,3 +166,9 @@ fun FileSource.withV1IndexedEncryption(password: String, allowFsIO: Boolean = fa
 
 fun FileSource.withV1IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false): Cryptorage =
         makeBaseSource(this, allowFsIO).withV1Encryption(password)
+
+fun FileSource.withV3IndexedEncryption(password: String, allowFsIO: Boolean = false): Cryptorage =
+        makeBaseSource(this, allowFsIO).withV3Encryption(password)
+
+fun FileSource.withV3IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false): Cryptorage =
+        makeBaseSource(this, allowFsIO).withV3Encryption(password)
