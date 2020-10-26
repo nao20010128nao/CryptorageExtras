@@ -10,7 +10,6 @@ import com.nao20010128nao.CryptorageExtras.indexer.V1Indexer.Companion.MANIFEST
 import com.nao20010128nao.CryptorageExtras.indexer.V1Indexer.Companion.MANIFEST_INDEX
 import java.io.File
 import java.io.FilterInputStream
-import java.io.InputStream
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
@@ -52,19 +51,17 @@ object ReferenceFileSource : FileSource {
         // zip file
         name.startsWith("zip:") -> {
             val (file, entry) = name.substring(4).split("!")
-            object : ByteSource() {
-                override fun openStream(): InputStream {
-                    val zf = ZipFile(file)
-                    val zEnt = zf.getEntry(entry)!!
-                    val strm = zf.getInputStream(zEnt)!!
-                    return (object : FilterInputStream(strm) {
-                        override fun close() {
-                            super.close()
-                            zf.close()
-                        }
-                    }).skip(offset)
-                }
-            }
+           source {
+               val zf = ZipFile(file)
+               val zEnt = zf.getEntry(entry)!!
+               val strm = zf.getInputStream(zEnt)!!
+               (object : FilterInputStream(strm) {
+                   override fun close() {
+                       super.close()
+                       zf.close()
+                   }
+               }).skip(offset)
+           }
         }
         // file
         testPath(name) && File(name).exists() -> FileByteSource(File(name), offset)
@@ -168,7 +165,7 @@ fun FileSource.withV1IndexedEncryption(password: AesKeys, allowFsIO: Boolean = f
         makeBaseSource(this, allowFsIO).withV1Encryption(password)
 
 fun FileSource.withV3IndexedEncryption(password: String, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV3Encryption(password)
+        makeBaseSource(this, allowFsIO).withV3Encryption(password, false)
 
 fun FileSource.withV3IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV3Encryption(password)
+        makeBaseSource(this, allowFsIO).withV3Encryption(password, false)

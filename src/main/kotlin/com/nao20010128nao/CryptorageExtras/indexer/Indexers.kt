@@ -14,7 +14,6 @@ import com.nao20010128nao.CryptorageExtras.bfilter.BloomFilter
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.InputStream
 import java.math.BigInteger
 import java.net.URL
 import kotlin.math.max
@@ -133,16 +132,14 @@ class V1Indexer(private val keys: AesKeys) : Indexer<V1Indexer> {
         finalIndex.files.putAll(indexer.finalIndex.files)
     }
 
-    override fun serialize(): ByteSource = object : ByteSource() {
-        override fun openStream(): InputStream {
-            val root = JsonObject()
-            root["files"] = finalIndex.files.mapValues { it.value.toJsonMap() }
-            // BLOOM_FILTER is unused as of e2aea0
-            root["meta"] = mapOf(
-                    BLOOM_FILTER to bloomFilter().encodeBase64ToString()
-            )
-            return ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
-        }
+    override fun serialize(): ByteSource = source {
+        val root = JsonObject()
+        root["files"] = finalIndex.files.mapValues { it.value.toJsonMap() }
+        // BLOOM_FILTER is unused as of e2aea0
+        root["meta"] = mapOf(
+                BLOOM_FILTER to bloomFilter().encodeBase64ToString()
+        )
+        ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
     }.encrypt(keys)
 
     override fun bloomFilter(): ByteArray {
@@ -291,16 +288,14 @@ class V3Indexer(private val keys: AesKeys) : Indexer<V3Indexer> {
         finalIndex.files.putAll(indexer.finalIndex.files)
     }
 
-    override fun serialize(): ByteSource = object : ByteSource() {
-        override fun openStream(): InputStream {
-            val root = JsonObject()
-            root["files"] = finalIndex.files.mapValues { it.value.toJsonMap() }
-            // BLOOM_FILTER is unused as of e2aea0
-            root["meta"] = mapOf(
-                    BLOOM_FILTER to bloomFilter().encodeBase64ToString()
-            )
-            return ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
-        }
+    override fun serialize(): ByteSource = source {
+        val root = JsonObject()
+        root["files"] = finalIndex.files.mapValues { it.value.toJsonMap() }
+        // BLOOM_FILTER is unused as of e2aea0
+        root["meta"] = mapOf(
+                BLOOM_FILTER to bloomFilter().encodeBase64ToString()
+        )
+        ByteArrayInputStream(root.toJsonString(false).utf8Bytes())
     }.encrypt(keys)
 
     override fun bloomFilter(): ByteArray {
