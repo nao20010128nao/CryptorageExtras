@@ -9,6 +9,7 @@ import com.google.common.io.ByteSource
 import com.google.common.io.ByteStreams
 import com.google.common.io.CharSource
 import com.nao20010128nao.Cryptorage.AesKeys
+import com.nao20010128nao.Cryptorage.UrlFetcher
 import com.nao20010128nao.Cryptorage.forCrypto
 import java.io.File
 import java.io.InputStream
@@ -73,8 +74,8 @@ internal class FileByteSource(private val file: File, private val offset: Int) :
     override fun sizeIfKnown(): Optional<Long> = Optional.of(file.length() - offset)
 }
 
-internal class UrlByteSource(private val url: URL, private val offset: Int) : ByteSource() {
-    override fun openStream(): InputStream = url.openStream().skip(offset)
+internal class UrlByteSource(private val url: URL, private val offset: Int, private val fetcher: UrlFetcher) : ByteSource() {
+    override fun openStream(): InputStream = fetcher.doGet(url).skip(offset)
 }
 
 

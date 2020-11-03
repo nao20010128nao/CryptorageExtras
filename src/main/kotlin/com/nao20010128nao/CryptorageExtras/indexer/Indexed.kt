@@ -14,7 +14,7 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
 
-object ReferenceFileSource : FileSource {
+class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
     override val isReadOnly: Boolean = false
 
     override fun close() {
@@ -66,7 +66,7 @@ object ReferenceFileSource : FileSource {
         // file
         testPath(name) && File(name).exists() -> FileByteSource(File(name), offset)
         // url
-        testURL(name) -> UrlByteSource(URL(name), offset)
+        testURL(name) -> UrlByteSource(URL(name), offset, fetcher)
         // none of above
         else -> error("Not found")
     }
@@ -93,7 +93,7 @@ object ReferenceFileSource : FileSource {
     } ?: -1L
 }
 
-object InetOnlyFileSource : FileSource {
+class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
     override val isReadOnly: Boolean = false
 
     override fun close() {
@@ -113,7 +113,7 @@ object InetOnlyFileSource : FileSource {
         // file
         testPath(name) && File(name).exists() -> noIO()
         // url
-        testURL(name) -> UrlByteSource(URL(name), offset)
+        testURL(name) -> UrlByteSource(URL(name), offset, fetcher)
         // none of above
         else -> error("Not found")
     }
@@ -137,8 +137,8 @@ object InetOnlyFileSource : FileSource {
     private fun noIO(): Nothing = error("Filesystem IO is disabled")
 }
 
-private fun makeBaseSource(fs: FileSource, allowFsIO: Boolean): FileSource {
-    val b = if (allowFsIO) ReferenceFileSource else InetOnlyFileSource
+private fun makeBaseSource(fs: FileSource, allowFsIO: Boolean, fetcher: UrlFetcher): FileSource {
+    val b = if (allowFsIO) ReferenceFileSource(fetcher) else InetOnlyFileSource(fetcher)
     val cmb = listOf(fs, b).combined()
     return object : FileSource by cmb {
         override fun open(name: String, offset: Int): ByteSource = when (name) {
@@ -158,14 +158,14 @@ private fun makeBaseSource(fs: FileSource, allowFsIO: Boolean): FileSource {
     }
 }
 
-fun FileSource.withV1IndexedEncryption(password: String, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV1Encryption(password)
+fun FileSource.withV1IndexedEncryption(password: String, allowFsIO: Boolean = false, fetcher: UrlFetcher = UrlFetcher.default): Cryptorage =
+        makeBaseSource(this, allowFsIO, fetcher).withV1Encryption(password)
 
-fun FileSource.withV1IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV1Encryption(password)
+fun FileSource.withV1IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false, fetcher: UrlFetcher = UrlFetcher.default): Cryptorage =
+        makeBaseSource(this, allowFsIO, fetcher).withV1Encryption(password)
 
-fun FileSource.withV3IndexedEncryption(password: String, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV3Encryption(password, false)
+fun FileSource.withV3IndexedEncryption(password: String, allowFsIO: Boolean = false, fetcher: UrlFetcher = UrlFetcher.default): Cryptorage =
+        makeBaseSource(this, allowFsIO, fetcher).withV3Encryption(password, false)
 
-fun FileSource.withV3IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false): Cryptorage =
-        makeBaseSource(this, allowFsIO).withV3Encryption(password, false)
+fun FileSource.withV3IndexedEncryption(password: AesKeys, allowFsIO: Boolean = false, fetcher: UrlFetcher = UrlFetcher.default): Cryptorage =
+        makeBaseSource(this, allowFsIO, fetcher).withV3Encryption(password, false)
