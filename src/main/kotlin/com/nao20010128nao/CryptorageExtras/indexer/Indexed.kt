@@ -51,17 +51,17 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
         // zip file
         name.startsWith("zip:") -> {
             val (file, entry) = name.substring(4).split("!")
-           source {
-               val zf = ZipFile(file)
-               val zEnt = zf.getEntry(entry)!!
-               val strm = zf.getInputStream(zEnt)!!
-               (object : FilterInputStream(strm) {
-                   override fun close() {
-                       super.close()
-                       zf.close()
-                   }
-               }).skip(offset)
-           }
+            source {
+                val zf = ZipFile(file)
+                val zEnt = zf.getEntry(entry)!!
+                val strm = zf.getInputStream(zEnt)!!
+                (object : FilterInputStream(strm) {
+                    override fun close() {
+                        super.close()
+                        zf.close()
+                    }
+                }).skip(offset)
+            }
         }
         // file
         testPath(name) && File(name).exists() -> FileByteSource(File(name), offset)
@@ -90,7 +90,23 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
         testURL(name) -> null
         // none of above
         else -> error("Not found")
-    } ?: -1L
+    } ?: -1
+
+    override fun has(name: String): Boolean = when {
+        // zip file
+        name.startsWith("zip:") -> {
+            val (file, entry) = name.substring(4).split("!")
+            ZipFile(file).use {
+                it.getEntry(entry) != null
+            }
+        }
+        // file
+        testPath(name) -> File(name).exists()
+        // url
+        testURL(name) -> fetcher.doHead(URL(name))
+        // none of above
+        else -> false
+    }
 }
 
 class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
@@ -111,7 +127,7 @@ class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
         // zip file
         name.startsWith("zip:") -> noIO()
         // file
-        testPath(name) && File(name).exists() -> noIO()
+        testPath(name) -> noIO()
         // url
         testURL(name) -> UrlByteSource(URL(name), offset, fetcher)
         // none of above
@@ -122,11 +138,22 @@ class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
         // zip file
         name.startsWith("zip:") -> -1
         // file
-        testPath(name) && File(name).exists() -> -1
+        testPath(name) -> -1
         // url
         testURL(name) -> -1
         // none of above
         else -> error("Not found")
+    }
+
+    override fun has(name: String): Boolean = when {
+        // zip file
+        name.startsWith("zip:") -> false
+        // file
+        testPath(name) -> false
+        // url
+        testURL(name) -> fetcher.doHead(URL(name))
+        // none of above
+        else -> false
     }
 
 
