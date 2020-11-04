@@ -314,6 +314,7 @@ class V3Indexer(private val keys: AesKeys) : Indexer<V3Indexer> {
 
     companion object {
         const val MANIFEST: String = "manifest"
+        const val MANIFEST_NONCE = "manifest_nonce"
         const val MANIFEST_INDEX: String = "manifest_index"
         const val BLOOM_FILTER: String = "bloom_filter"
 
@@ -325,7 +326,13 @@ class V3Indexer(private val keys: AesKeys) : Indexer<V3Indexer> {
     }
 
     private fun readIndex(source: FileSource, manifestName: String = MANIFEST): Index = if (source.has(manifestName)) {
-        val data = parseJson(AesDecryptorByteSource(source.open(manifestName), keys).asCharSource().openStream())
+        val manifestKeys = if (source.has(MANIFEST_NONCE)) {
+            val iv = source.open(MANIFEST_NONCE).read()
+            keys.copy(second = iv)
+        } else {
+            keys
+        }
+        val data = parseJson(AesDecryptorByteSource(source.open(manifestName), manifestKeys).asCharSource().openStream())
         val files = data.obj("files")!!.mapValues { CryptorageFile(it.value as JsonObject) }
         Index(files.toMutableMap())
     } else {
