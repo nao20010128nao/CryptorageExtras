@@ -34,13 +34,13 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
                 it.getEntry(entry)?.lastModifiedTime?.to(TimeUnit.MILLISECONDS)
             }
         }
+        // url
+        testURL(name) -> null
         // file
         testPath(name) && File(name).exists() -> when (val lmod = File(name).lastModified()) {
             0L -> null
             else -> lmod
         }
-        // url
-        testURL(name) -> null
         // none of above
         else -> error("Not found")
     } ?: -1L
@@ -63,10 +63,10 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
                 }).skip(offset)
             }
         }
-        // file
-        testPath(name) && File(name).exists() -> FileByteSource(File(name), offset)
         // url
         testURL(name) -> UrlByteSource(URL(name), offset, fetcher)
+        // file
+        testPath(name) && File(name).exists() -> FileByteSource(File(name), offset)
         // none of above
         else -> error("Not found")
     }
@@ -81,13 +81,13 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
                 it.getEntry(entry)?.size
             }
         }
+        // url
+        testURL(name) -> null
         // file
         testPath(name) && File(name).exists() -> when (val size = File(name).length()) {
             0L -> null
             else -> size
         }
-        // url
-        testURL(name) -> null
         // none of above
         else -> error("Not found")
     } ?: -1
@@ -100,10 +100,10 @@ class ReferenceFileSource(private val fetcher: UrlFetcher) : FileSource {
                 it.getEntry(entry) != null
             }
         }
-        // file
-        testPath(name) -> File(name).exists()
         // url
         testURL(name) -> fetcher.doHead(URL(name))
+        // file
+        testPath(name) -> File(name).exists()
         // none of above
         else -> false
     }
@@ -126,10 +126,10 @@ class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
     override fun open(name: String, offset: Int): ByteSource = when {
         // zip file
         name.startsWith("zip:") -> noIO()
-        // file
-        testPath(name) -> noIO()
         // url
         testURL(name) -> UrlByteSource(URL(name), offset, fetcher)
+        // file
+        testPath(name) -> noIO()
         // none of above
         else -> error("Not found")
     }
@@ -137,10 +137,10 @@ class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
     override fun size(name: String): Long = when {
         // zip file
         name.startsWith("zip:") -> -1
-        // file
-        testPath(name) -> -1
         // url
         testURL(name) -> -1
+        // file
+        testPath(name) -> -1
         // none of above
         else -> error("Not found")
     }
@@ -148,10 +148,10 @@ class InetOnlyFileSource(private val fetcher: UrlFetcher) : FileSource {
     override fun has(name: String): Boolean = when {
         // zip file
         name.startsWith("zip:") -> false
-        // file
-        testPath(name) -> false
         // url
         testURL(name) -> fetcher.doHead(URL(name))
+        // file
+        testPath(name) -> false
         // none of above
         else -> false
     }
