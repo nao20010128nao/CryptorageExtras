@@ -27,7 +27,7 @@ internal inline fun makeDedicatedSplitFilename(name: String): Regex = Regex(Rege
 
 internal inline fun Iterator<InputStream>.combined(): InputStream = ConcatenatedInputStream(this)
 
-inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
+internal inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
     var lastError: Throwable? = null
     for (i in (1..retry)) {
         return try {
@@ -41,7 +41,7 @@ inline fun <T> probable(retry: Int = 5, f: () -> T?): T? {
     return null
 }
 
-inline fun <T> wish(f: () -> T?): T? = try {
+internal inline fun <T> wish(f: () -> T?): T? = try {
     f()
 } catch (e: Throwable) {
     null
